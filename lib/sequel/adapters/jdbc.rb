@@ -29,7 +29,16 @@ module Sequel
     
     # Contains procs keyed on sub adapter type that extend the
     # given database object so it supports the correct database type.
-    DATABASE_SETUP = {:postgresql=>proc do |db|
+    DATABASE_SETUP = {
+      :vertica=>proc do |db|
+        JDBC.load_gem(:Vertica)
+        com.vertica.jdbc.Driver
+        Sequel.require 'adapters/jdbc/vertica'
+        db.extend(Sequel::JDBC::Vertica::DatabaseMethods)
+        db.extend_datasets Sequel::Vertica::DatasetMethods
+        com.vertica.jdbc.Driver
+      end,
+      :postgresql=>proc do |db|
         JDBC.load_gem(:Postgres)
         org.postgresql.Driver
         Sequel.require 'adapters/jdbc/postgresql'
